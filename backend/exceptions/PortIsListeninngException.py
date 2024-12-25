@@ -1,0 +1,2 @@
+class PortIsListeningException(Exception):
+    pass
