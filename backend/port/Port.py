@@ -1,4 +1,5 @@
 from backend.dataQueue.DataQueue import DataQueue
+from backend.settings import settings
 import serial
 import threading
 
@@ -8,8 +9,8 @@ class Port():
     __commandDataQueue = DataQueue()
     isListening = False
 
-    def __init__(self, SerialPort : serial.Serial, dataQueue: DataQueue, commandDataQueue: DataQueue):
-        self.__serialPort = SerialPort
+    def __init__(self, dataQueue: DataQueue, commandDataQueue: DataQueue):
+        self.__serialPort = serial.Serial(settings.PORT, settings.BAUDRATE)
         self.__dataQueue = dataQueue
         self.__commandDataQueue = commandDataQueue
 

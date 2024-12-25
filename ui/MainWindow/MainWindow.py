@@ -105,43 +105,20 @@ class MainWindow(QtWidgets.QMainWindow, MainWindow_ui.Ui_MainWindow, QObject):
         self.AirQ.show()
 
     def timePlus(self):
-        int_time = self.GetTimeFromTimeEdit().split(":")
-        if int(int_time[1]) >= 59:
-            int_time[1] = "00"
-            if int(int_time[0]) <= 0:
-                int_time[0] = "01"
-            else:
-                if int(int_time[0]) <= 8:
-                    int_time[0] = "0" + str(int(int_time[0]) + 1)
-                else:
-                    int_time[0] = str(int(int_time[0]) + 1)
-        else:
-            if int(int_time[1]) <= 8:
-                int_time[1] = "0" + str(int(int_time[1]) + 1)
-            else:
-                int_time[1] = str(int(int_time[1]) + 1)
-        self.timeEdit.setText(int_time[0] + int_time[1])
+        seconds = self.GetSecondsFromTimeEdit()
+        if seconds == 59 * 60 + 59:
+            return
+        
+        seconds += 1
+        self.SetTimeEditTextFromSeconds(seconds)
 
     def timeMinus(self):
-        int_time = self.GetTimeFromTimeEdit().split(":")
-        if int(int_time[1]) <= 10:
-            if int_time[1] == "00":
-                if int_time[0] != "00":
-                    int_time[1] = "59"
-                else:
-                    int_time[0] = "00"
-                if int(int_time[0]) <= 10:
-                    if int_time[0] == "00":
-                        int_time[0] = "00"
-                    else:
-                        int_time[0] = "0" + str(int(int_time[0]) - 1)
-                else:
-                    int_time[0] = str(int(int_time[0]) - 1)
-            else:
-                int_time[1] = "0" + str(int(int_time[1]) - 1)
-        else:
-            int_time[1] = str(int(int_time[1]) - 1)
-        self.timeEdit.setText(int_time[0] + int_time[1])
+        seconds = self.GetSecondsFromTimeEdit()
+        if seconds == 0:
+            return
+        
+        seconds -= 1
+        self.SetTimeEditTextFromSeconds(seconds)
 
     def Stop(self):
         self.experiment.stop()
@@ -159,6 +136,22 @@ class MainWindow(QtWidgets.QMainWindow, MainWindow_ui.Ui_MainWindow, QObject):
 
         # Останавливаем таймер
         self.timer.cancel()
+
+    # Устанавливаем время на экране на основе секунд
+    def SetTimeEditTextFromSeconds(self, seconds : int):
+        minutes = seconds // 60
+        seconds = seconds % 60
+        if minutes < 10:
+            minutes = "0" + str(minutes)
+        if seconds < 10:
+            seconds = "0" + str(seconds)
+
+        self.timeEdit.setText(f"{minutes}:{seconds}")
+
+    # Получаем время с экрана в секундах
+    def GetSecondsFromTimeEdit(self) -> int:
+        minutes_str, seconds_str = self.GetTimeFromTimeEdit().split(":")
+        return int(minutes_str) * 60 + int(seconds_str)
 
     # Получаем время с экрана
     def GetTimeFromTimeEdit(self) -> str:

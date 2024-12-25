@@ -5,10 +5,9 @@ from backend.equipment.Vitaj import Vitaj
 from backend.equipment.Fire import Fire
 from backend.equipment.Power import Power
 from backend.port import Port, PortTest
-from backend.dataQueue import DataQueue
+from backend.dataQueue import DataQueue, DataQueueWithNotification
 from ui.MainWindow import MainWindow
 from time import sleep
-import serial
 
 from viewmodel.IndicatorStateViewModel import IndicatorStateViewModel
 from viewmodel.ClickableIndicatorStateViewModel import ClickableIndicatorStateViewModel
@@ -26,12 +25,11 @@ class Experiment():
         self.UIStop = StopSignal
 
         #Инициализируем очереди
-        self.dataQueue = DataQueue.DataQueue()
+        self.dataQueue = DataQueueWithNotification.DataQueueWithNotification()
         self.commandQueue = DataQueue.DataQueue()
 
         #Инициализируем порт
-        #serialPort = serial.Serial("COM4", baudrate=115200)
-        #self.port = Port.Port(serialPort, commandDataQueue=self.commandQueue, dataQueue=self.dataQueue)
+        #self.port = Port.Port(commandDataQueue=self.commandQueue, dataQueue=self.dataQueue)
         self.port = PortTest.PortTest(commandDataQueue=self.commandQueue, dataQueue=self.dataQueue)
 
         #Инициализируем объекты устройств

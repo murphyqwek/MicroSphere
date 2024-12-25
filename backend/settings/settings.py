@@ -1,11 +1,10 @@
-from backend.experiment.Experiment import Experiment
-from backend.dataQueue.DataQueue import DataQueue
-from backend.port.Port import Port
+import platform
 
-def setupExperiment(experiment : Experiment):
-    #Инициализируем очереди
-    experiment.dataQueue = DataQueue()
-    experiment.commandQueue = DataQueue()
+if platform.system() == "Linux":
+    PORT = "/dev/ttyUSB0"
+elif platform.system() == "Windows":
+    PORT = "COM4"
+else:
+    PORT = ""
 
-    #Инициализируем порт
-    experiment.port = Port(experiment.dataQueue, experiment.commandQueue, "COM2", 9600)
+BAUDRATE = 9600
