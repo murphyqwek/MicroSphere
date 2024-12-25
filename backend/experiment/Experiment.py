@@ -66,7 +66,7 @@ class Experiment():
         #self.PowerIndicatorVM = IndicatorStateViewModel(self.Power, self.PowerIndicator)
 
     def getIsPortOpen(self) -> bool:
-        return self.Port.IsOpen()
+        return self.port.IsOpen()
 
     def openPort(self):
         self.port.open()

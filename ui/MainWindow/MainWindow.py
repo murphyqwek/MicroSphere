@@ -27,12 +27,25 @@ class MainWindow(QtWidgets.QMainWindow, MainWindow_ui.Ui_MainWindow, QObject):
         palette.setColor(palette.WindowText, QtGui.QColor(0, 0, 0))
         self.LCD.setPalette(palette)
 
+        # Таймеры для кнопок
+        self.hold_timer_increase = None
+        self.hold_timer_decrease = None
+
+        # Состояние удержания
+        self.is_holding_increase = False
+        self.is_holding_decrease = False
+
+        # Подключение событий кнопок
+        self.timeplus.pressed.connect(self.start_hold_increase)
+        self.timeplus.released.connect(self.stop_hold_increase)
+
+        self.timeminus.pressed.connect(self.start_hold_decrease)
+        self.timeminus.released.connect(self.stop_hold_decrease)
+
         # Подписываемся на события
         self.StartButton.clicked.connect(self.Start)
         self.ButtonGasQ.clicked.connect(self.GasQ)
         self.ButtonAirQ.clicked.connect(self.AirQ)
-        self.timeplus.clicked.connect(self.timePlus)
-        self.timeminus.clicked.connect(self.timeMinus)
         self.GasQ = None
         self.AirQ = None
         self.connectSignals()
@@ -45,6 +58,71 @@ class MainWindow(QtWidgets.QMainWindow, MainWindow_ui.Ui_MainWindow, QObject):
         self.VitajIndicator.setStyleSheet(style)
         self.AirIndicator.setStyleSheet(style)
         self.FireIndicator.setStyleSheet(style)
+
+    def start_hold_increase(self):
+        """Обработка начала удержания кнопки увеличения."""
+        self.increment_timer(1)  # Увеличиваем на 1 при нажатии
+        self.is_holding_increase = True
+        self.hold_timer_increase = RepeatTimer(0.5, self.increment_on_hold_increase)
+        self.hold_timer_increase.start()
+
+    def stop_hold_increase(self):
+        """Остановка удержания кнопки увеличения."""
+        self.is_holding_increase = False
+        if self.hold_timer_increase:
+            self.hold_timer_increase.cancel()
+
+    def increment_on_hold_increase(self):
+        """Увеличение времени на 5 при удержании кнопки."""
+        if self.is_holding_increase:
+            self.increment_timer(5)
+
+    def start_hold_decrease(self):
+        """Обработка начала удержания кнопки уменьшения."""
+        self.decrement_timer(1)  # Уменьшаем на 1 при нажатии
+        self.is_holding_decrease = True
+        self.hold_timer_decrease = RepeatTimer(0.5, self.decrement_on_hold)
+        self.hold_timer_decrease.start()
+
+    def stop_hold_decrease(self):
+        """Остановка удержания кнопки уменьшения."""
+        self.is_holding_decrease = False
+        if self.hold_timer_decrease:
+            self.hold_timer_decrease.cancel()
+
+    def decrement_on_hold(self):
+        """Уменьшение времени на 5 при удержании кнопки."""
+        if self.is_holding_decrease:
+            self.decrement_timer(5)
+
+    def increment_timer(self, amount):
+        """Увеличение таймера на заданное количество секунд."""
+        int_time = self.GetTimeFromTimeEdit().split(":")
+        minutes = int(int_time[0])
+        seconds = int(int_time[1]) + amount
+
+        if seconds >= 60:
+            minutes += seconds // 60
+            seconds %= 60
+
+        self.timeEdit.setText(f"{minutes:02}:{seconds:02}")
+
+    def decrement_timer(self, amount):
+        """Уменьшение таймера на заданное количество секунд."""
+        int_time = self.GetTimeFromTimeEdit().split(":")
+        minutes = int(int_time[0])
+        seconds = int(int_time[1]) - amount
+
+        if seconds < 0:
+            minutes -= 1
+            seconds += 60
+
+        # Убедимся, что время не становится отрицательным
+        if minutes < 0:
+            minutes = 0
+            seconds = 0
+
+        self.timeEdit.setText(f"{minutes:02}:{seconds:02}")
 
     # Через сигналы мы можем корректно вызывать метода окна из других потоков
     def connectSignals(self):
@@ -104,22 +182,6 @@ class MainWindow(QtWidgets.QMainWindow, MainWindow_ui.Ui_MainWindow, QObject):
         self.AirQ = AirQ()
         self.AirQ.show()
 
-    def timePlus(self):
-        seconds = self.GetSecondsFromTimeEdit()
-        if seconds == 59 * 60 + 59:
-            return
-        
-        seconds += 1
-        self.SetTimeEditTextFromSeconds(seconds)
-
-    def timeMinus(self):
-        seconds = self.GetSecondsFromTimeEdit()
-        if seconds == 0:
-            return
-        
-        seconds -= 1
-        self.SetTimeEditTextFromSeconds(seconds)
-
     def Stop(self):
         self.experiment.stop()
         self.setUItoDefaultState()
@@ -136,22 +198,6 @@ class MainWindow(QtWidgets.QMainWindow, MainWindow_ui.Ui_MainWindow, QObject):
 
         # Останавливаем таймер
         self.timer.cancel()
-
-    # Устанавливаем время на экране на основе секунд
-    def SetTimeEditTextFromSeconds(self, seconds : int):
-        minutes = seconds // 60
-        seconds = seconds % 60
-        if minutes < 10:
-            minutes = "0" + str(minutes)
-        if seconds < 10:
-            seconds = "0" + str(seconds)
-
-        self.timeEdit.setText(f"{minutes}:{seconds}")
-
-    # Получаем время с экрана в секундах
-    def GetSecondsFromTimeEdit(self) -> int:
-        minutes_str, seconds_str = self.GetTimeFromTimeEdit().split(":")
-        return int(minutes_str) * 60 + int(seconds_str)
 
     # Получаем время с экрана
     def GetTimeFromTimeEdit(self) -> str:

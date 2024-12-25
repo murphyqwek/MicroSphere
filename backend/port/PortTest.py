@@ -16,7 +16,7 @@ class PortTest():
     def open(self):
         self.__isOpen = True
 
-    def isOpen(self):
+    def IsOpen(self):
         return self.__isOpen
 
     def close(self):
