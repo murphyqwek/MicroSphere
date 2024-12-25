@@ -13,11 +13,11 @@ class PortTest():
         self.__dataQueue = dataQueue
         self.__commandDataQueue = commandDataQueue
 
-    def IsOpen(self):
-        return self.__isOpen
-
     def open(self):
         self.__isOpen = True
+
+    def isOpen(self):
+        return self.__isOpen
 
     def close(self):
         self.__isOpen = False
@@ -55,7 +55,7 @@ class PortTest():
                 isWorking = True
                 continue
 
-            isWorking = self.isListening and self.IsOpen()
+            isWorking = self.isListening and self.isOpen()
 
 
     def setTime(self, seconds):

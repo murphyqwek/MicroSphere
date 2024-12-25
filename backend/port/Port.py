@@ -8,8 +8,8 @@ class Port():
     __commandDataQueue = DataQueue()
     isListening = False
 
-    def __init__(self, dataQueue: DataQueue, commandDataQueue: DataQueue, COM : str, baudrate: 9600):
-        self.__serialPort = serial.Serial(COM, baudrate)
+    def __init__(self, SerialPort : serial.Serial, dataQueue: DataQueue, commandDataQueue: DataQueue):
+        self.__serialPort = SerialPort
         self.__dataQueue = dataQueue
         self.__commandDataQueue = commandDataQueue
 
@@ -45,6 +45,7 @@ class Port():
             except:
                 self.isListening = False
                 isWorking = False
+                self.Lock = False
                 break
             if data != "" and data != None:
                 print("-> " + data)

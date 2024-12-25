@@ -6,7 +6,9 @@ from backend.equipment.Fire import Fire
 from backend.equipment.Power import Power
 from backend.port import Port, PortTest
 from backend.dataQueue import DataQueue
-
+from ui.MainWindow import MainWindow
+from time import sleep
+import serial
 
 from viewmodel.IndicatorStateViewModel import IndicatorStateViewModel
 from viewmodel.ClickableIndicatorStateViewModel import ClickableIndicatorStateViewModel
@@ -28,7 +30,9 @@ class Experiment():
         self.commandQueue = DataQueue.DataQueue()
 
         #Инициализируем порт
-        self.port = Port.Port(self.dataQueue, self.commandQueue, "COM2", 9600)
+        #serialPort = serial.Serial("COM4", baudrate=115200)
+        #self.port = Port.Port(serialPort, commandDataQueue=self.commandQueue, dataQueue=self.dataQueue)
+        self.port = PortTest.PortTest(commandDataQueue=self.commandQueue, dataQueue=self.dataQueue)
 
         #Инициализируем объекты устройств
         self.Ventilation = Ventilation(self.dataQueue, self.commandQueue)
@@ -37,6 +41,7 @@ class Experiment():
         self.Gas = Gas(self.dataQueue, self.commandQueue)
         self.Fire = Fire(self.dataQueue, self.commandQueue)
         self.Power = Power(self.stopByOutterCommand, self.dataQueue, self.commandQueue)
+        self.time = 0
 
         #Подписываемся на события изменения состояния оборудования
         self.initIndicatorsViewModels()
@@ -63,7 +68,7 @@ class Experiment():
         #self.PowerIndicatorVM = IndicatorStateViewModel(self.Power, self.PowerIndicator)
 
     def getIsPortOpen(self) -> bool:
-        return self.port.IsOpen()
+        return self.Port.IsOpen()
 
     def openPort(self):
         self.port.open()
@@ -95,8 +100,30 @@ class Experiment():
 
     def start(self):
         self.openPort()
-        self.initializeEquipments()
+        #self.initializeEquipments()
+        self.step1()
+        self.step2()
+        self.step3()
         self.Power.startProgramm()
+
+    def step1(self):
+        self.initializeVentilation()
+        self.initializeVitaj()
+        sleep(2)
+        #self.time = MainWindow.MainWindow.time
+        #while self.time <= (MainWindow.MainWindow.time + 2):
+
+
+    def step2(self):
+        self.initializeFire()
+        self.initializeGas()
+        #while self.time <= (MainWindow.MainWindow.time + 2):
+        sleep(2)
+
+    def step3(self):
+        self.initializeAir()
+        self.stopFire()
+
 
     def initializeEquipments(self):
         self.initializeVentilation()
@@ -104,7 +131,7 @@ class Experiment():
         self.initializeAir()
         self.initializeGas()
         self.initializeFire()
-        self.initializePower()
+        #self.initializePower()
 
 
     def timerTickHandler(self, milliseconds):
