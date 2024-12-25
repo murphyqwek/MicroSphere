@@ -3,7 +3,8 @@ from backend.dataQueue.DataQueueWithNotification import DataQueueWithNotificatio
 from ui.services.timer import RepeatTimer
 
 class Encoder(BaseEquipment):
-    command = "Re"
+    commandUp = "Re"
+    commandDown = "Rd"
 
     moved = True
 
@@ -11,19 +12,30 @@ class Encoder(BaseEquipment):
 
     timeLeft = TIMEOUT
 
-    def __init__(self, dataQueue, commandQueue, baseCommandMove : str):
+    currentPosition = 0
+
+    def __init__(self, dataQueue, commandQueue, commandUp : str, commandDown : str):
         super().__init__(dataQueue, commandQueue)
-        self.command = baseCommandMove
+        self.commandUp = commandUp
+        self.commandDown = commandDown
         self.timer = RepeatTimer(1, self.checkForCommiting)
 
-    def moveEncoder(self, iterations : int):
-        command = self.command + str(iterations)
+    def moveEncoder(self, newPosition):
+        delta = newPosition - self.currentPosition
+        if delta > 0:
+            command = self.commandUp # + str(delta)
+        elif delta < 0:
+            command = self.commandDown # + str(delta)
+        else:
+            return
+        
+        self.currentPosition = newPosition
         
         if self.getDataQueue() is DataQueueWithNotification:
             dataQueue: DataQueueWithNotification = self.getCommandDataQueue()
             dataQueue.addNotificator("1", self.commitMovement, True)
             dataQueue.appendData(command)
-            
+
             self.timeLeft = self.TIMEOUT
             self.timer.run()
         else:

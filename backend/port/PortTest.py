@@ -55,7 +55,7 @@ class PortTest():
                 isWorking = True
                 continue
 
-            isWorking = self.isListening and self.isOpen()
+            isWorking = self.isListening and self.IsOpen()
 
 
     def setTime(self, seconds):
