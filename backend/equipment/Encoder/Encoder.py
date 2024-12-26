@@ -20,26 +20,32 @@ class Encoder(BaseEquipment):
         self.commandDown = commandDown
         self.timer = RepeatTimer(1, self.checkForCommiting)
 
-    def moveEncoder(self, newPosition):
-        delta = newPosition - self.currentPosition
-        if delta > 0:
-            command = self.commandUp # + str(delta)
-        elif delta < 0:
-            command = self.commandDown # + str(delta)
+    def __generateCommand(self, value : int):
+        if value < 0:
+            return f"{self.commandDown}{abs(value)}"
         else:
-            return
+            return f"{self.commandUp}{abs(value)}"
+
+    def moveEncoder(self, step : int):
+        command = self.__generateCommand(step)
+        self.currentPosition += step
         
-        self.currentPosition = newPosition
-        
+        self.sendCommand(command)
+        print("Отправка команды: " + command)
+        #TODO: раскоментить
+        """
         if self.getDataQueue() is DataQueueWithNotification:
             dataQueue: DataQueueWithNotification = self.getCommandDataQueue()
             dataQueue.addNotificator("1", self.commitMovement, True)
             dataQueue.appendData(command)
 
-            self.timeLeft = self.TIMEOUT
-            self.timer.run()
+
+            
+            #self.timeLeft = self.TIMEOUT
+            #self.timer.run()
         else:
             raise Exception("DataQueue without Notification in Encoder")
+            """
 
     def commitMovement(self, data : str):
         self.moved = True
