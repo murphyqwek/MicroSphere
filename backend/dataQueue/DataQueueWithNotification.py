@@ -1,5 +1,5 @@
 from backend.dataQueue.DataQueue import DataQueue
-from backend.dataQueue.NotificatorStruct import NotificatorStruct
+from backend.dataQueue.notificator.NotificatorStruct import NotificatorStruct
 import threading
 
 class DataQueueWithNotification(DataQueue):
@@ -13,13 +13,15 @@ class DataQueueWithNotification(DataQueue):
     def __checkForNotification(self, data: str) -> NotificatorStruct:
         with threading.Lock():
             notificator = self.__notificationHashTable.get(data, None)
+        if notificator == None:
+            return NotificatorStruct(None)
         if notificator.isSingle():
             self.__notificationHashTable.pop(data)
 
         return notificator
     
     def addNotificator(self, key : str, funcToNotificate, isSingle : bool):
-        notifStruct = NotificatorStruct(key, funcToNotificate, isSingle)
+        notifStruct = NotificatorStruct(funcToNotificate, isSingle, key)
         with threading.Lock():
             if self.__notificationHashTable.get(key, None) != None:
                 print("DATA QUEUE NOTIFICATION HASH TABLE ALREADY HAS NOTIFICATOR")
