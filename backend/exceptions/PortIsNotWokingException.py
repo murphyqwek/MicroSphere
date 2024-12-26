@@ -1,0 +1,2 @@
+class PortIsNotWokingException(Exception):
+    pass
