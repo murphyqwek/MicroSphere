@@ -22,15 +22,16 @@ class Encoder(BaseEquipment):
 
     def __generateCommand(self, value : int):
         if value < 0:
-            return f"{self.commandDown}{abs(value)}"
+            return f"{self.commandDown}{abs(value)}n"
         else:
-            return f"{self.commandUp}{abs(value)}"
+            return f"{self.commandUp}{abs(value)}n"
 
     def moveEncoder(self, step : int):
         command = self.__generateCommand(step)
         self.currentPosition += step
         
         self.sendCommand(command)
+        # TODO: при отправке выглядит как отправка двух команд
         print("Отправка команды: " + command)
         #TODO: раскоментить
         """
